@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Vagrant</title>
+    <link rel="stylesheet" href="lib/revealjs/css/reveal.min.css"> 
+    <link rel="stylesheet" href="lib/revealjs/css/theme/beige.css" id="theme"> 
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/revealjs/lib/css/zenburn.css">
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+
+    <script>
+      document.write( '<link rel="stylesheet" href="lib/revealjs/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <
+    ![endif]-->
+    <style>
+      .reveal .slides{
+        text-align: left;
+      }
+
+      .reveal h2{
+        margin-bottom: 50px;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+
+        <section>
+        <div style="float:left;width:70%">
+          <img style="border:none" src="images/Vagrant.png">
+        </div>
+        <a href="http://vagrantup.com">http://vagrantup.com</a>
+        </section>
+        
+        <section>
+
+          <section>
+          <h1>High level overview</h1>
+          </section>
+
+          <section>
+          <h2>Overview</h2>
+          <div style="text-align:center;">
+            <img src="images/VagrantHighLevelOverview.png"/>
+          </div>
+          </section>
+
+          <section>
+          <h2>The Vagranffile</h2>
+          <pre><code  style="max-height:600px">
+Vagrant.configure(2) do |config|
+
+  # one vm description
+  config.vm.define "myvm" do myvm
+    #
+    # Reference to a box
+    #
+
+    #
+    # Shared folder
+    #
+
+    #
+    # Networking
+    #
+
+    #
+    # Provisioning
+    #
+    #
+  end
+end
+          </code></pre>
+
+          </section>
+
+          <section>
+          <h2>One example</h2>
+          <pre><code data-trim contenteditable style="max-height:700px">
+Vagrant.configure("2") do |config|
+  config.vm.define "wordpress" do |wordpress|
+    wordpress.vm.box = "wheezy64"
+    wordpress.vm.box_url = "https://vagrant.irisa.fr/boxes/debian-wheezy-x64-puppet_3.0.1.box"
+
+    wordpress.vm.network :private_network, ip: "192.168.100.101"
+
+    wordpress.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--cpus", "1"]
+    end
+
+    wordpress.vm.provision :puppet do |puppet|
+      puppet.manifests_path = "puppet/manifests"
+      puppet.manifest_file = "wordpress.pp"
+      puppet.module_path = "puppet/modules"
+    end
+  end
+end
+</code></pre>
+          </section>
+           
+          <section>
+          <h2>Demo</h2>
+           <div style="text-align:center">
+            <h3> vagrant up wordpress</h3>
+            <small><a href="http://192.168.100.101">http://192.168.100.101</a></small>
+          </div>
+          <br/>
+          <br/>
+          </section>
+         
+          </section>
+
+          <section id="menu">
+          <h1>How to</h1>
+            <ul>
+              <li><a href="#/addBox">Add a box to the local repository</a></li>
+              <li><a href="#/quickStart">Quick start a VM ?</a></li>
+              <li><a href="#/hostname">Set the hostname of a VM ?</a></li>
+              <li><a href="#/provision">Provision your VMs ?</a></li>
+              <li><a href="#/forward">Forward a port ?</a></li>
+              <li><a href="#/staticIp">Give the VMs static IPs ?</a></li>
+              <li><a href="#/shareFolders">Share folders with your host machine ?</a></li>
+              <li><a href="#/modify">Change the size of your VMs</a></li>
+              <li><a href="#/multipleVMs">Work with multiple VMs ?</a></li>
+              <li><a href="#/dry">Not repeat yourself in the Vagrantfile ?</a></li>
+              <li><a href="#savePublish">Save / publish a box ?</a></li>
+              <li><a href="#/work">Learn by doing</a></li>
+            </ul>
+          </section>
+
+          <section id="addBox">
+          <section>
+          <h2><a href="#/menu">A</a>dd a box to the local repository</h2>
+          </section>
+          <section>
+
+          </section>
+          <pre><code data-trim contenteditable>
+# Add a box
+vagrant box add irisa/ubuntu1410 https://vagrant.irisa.fr/boxes/irisa_ubuntu-14.10_puppet-3.6.1.box
+# What can be done on boxes
+vagrant box 
+          </code></pre>
+          </section>
+
+          <section id="quickStart">
+          <section>
+          <h2><a href="#/menu">Q</a>uickstart</h2>
+          Initialisation : 
+          <pre><code data-trim contenteditable>
+vagrant init irisa/ubuntu1410
+# Or put the following in a Vagrantfile
+Vagrant.configure(2) do |config|
+  config.vm.box = "irisa/ubuntu1410"
+  config.vm.box_url = "https://vagrant.irisa.fr/boxes/irisa_ubuntu-14.10_puppet-3.6.1.box"
+end
+          </code></pre>
+          Start : 
+          <pre><code data-trim contenteditable>
+          vagrant up
+          </code></pre>
+          VM life-cycle
+          <pre><code data-trim contenteditable>
+vagrant suspend
+vagrant resume
+vagrant halt
+vagrant up
+vagrant destroy
+          </code></pre>
+
+
+          </section>
+          </section>
+
+          <section id="hostname">
+          <section>
+          <h2><a href="#/menu">S</a>et the hostname</h2>
+          <pre><code data-trim contenteditable>
+# initialize a new project on a previously downloaded box
+vagrant init irisa/ubuntu1410
+# Or put the following in a Vagrantfile
+Vagrant.configure(2) do |config|
+  config.vm.box = "irisa/ubuntu1410"
+  config.vm.box_url = "https://vagrant.irisa.fr/boxes/irisa_ubuntu-14.10_puppet-3.6.1.box"
+  config.vm.hostname = "myserver"
+end
+          </code></pre>
+
+          Reload the configuration of a running VM.
+          <pre><code data-trim contenteditable>
+          vagrant reload
+          </code></pre>
+
+
+          Learn more about <a href="https://docs.vagrantup.com/v2/vagrantfile/machine_settings.html"><code>config.vm</code> namespace.</a>
+
+          </section>
+          </section>
+
+          <section id="provision">
+          <section>
+          <h2><a href="#/menu">P</a>rovision your VMs</h2>
+          
+          <ul>
+            <li>File</li>
+            <li>Shell</li>
+            <li>Puppet</li>
+            <li>...</li>
+          </ul>
+
+          </section>
+
+          <section>
+          <h2>File provisioning = upload file or directory on node</h2>
+          <pre><code>
+# In the Vagrantfile
+config.vm.provision  "file", source: "Vagrantfile", destination: "Vagrantfile"
+          </code></pre>
+          Provision explicitly a running VM :
+          <pre><code>
+vagrant provision
+          </code></pre>
+          Or implicitly : provision will run during the first <code>vagrant up</code>.
+          </section>
+
+          <section>
+          <h2>Shell provisioning = execute script on node</h2>
+
+          <pre><code>
+config.vm.provision "shell", inline: "echo Hello Vagrant"
+# Same as
+config.vm.provision "shell", inline: "echo $1 $2", args: "Hello Vagrant"
+# Same as
+config.vm.provision "shell", inline: "echo $1 $2", args: ["Hello", "Vagrant"]
+# Same as
+config.vm.provision "shell" do |s|
+  s.inline = "echo $1 $2"
+  s.args = ["Hello", "Vagrant"]
+end
+
+## From a shell script
+config.vm.provision "shell", path: "script.sh"
+## From a remote shell script
+config.vm.provision "shell", path: "https://example.com/provisioner.sh"
+          </code></pre>
+
+          </section>
+
+          <section>
+          <h2>Puppet provisioning = run puppet apply on node</h2>
+          <pre><code>
+config.vm.provision :puppet do |puppet|
+  puppet.manifests_path = "puppet/manifests"
+  puppet.manifest_file = "wordpress.pp"
+  puppet.module_path = "puppet/modules"
+end
+            </code></pre>
+
+          </section>
+          </section> <!-- provisioning -->
+
+          <section id="forward">
+          <section>
+          <h2><a href="#/menu">F</a>orward a port</h2>
+          <pre><code>
+config.vm.network "forwarded_port", guest: 80, host: 8000
+
+config.vm.provision "shell", inline: "apt-get update && apt-get -y install apache2"
+          </code></pre>
+          </section>
+          </section>
+
+          <section id="staticIp">
+          <section>
+          <h2><a href="#/menu">G</a>ive the VMs static IPs</h2>
+          <pre><code>
+config.vm.network "private_network", ip: "192.168.2.2"
+config.vm.network "private_network", ip: "172.16.2.2"
+          </code></pre>
+
+          Combine with port forwarding and auto-correction
+          <pre><code>
+config.vm.network "forwarded_port", guest: 80, host: 8000, guest_ip: 192.168.2.2, auto_corret :true
+
+config.vm.network "private_network", ip: "192.168.2.2"
+config.vm.network "private_network", ip: "172.16.2.2"
+          </code></pre>
+          </code></pre>
+
+          </section>
+          </section>
+
+          <section id="shareFolders">
+          <section>
+          <h2><a href="#/menu">S</a>hare folders</h2>
+          By defaut the directory containing the <code>Vagrantfile</code> is shared under <code>/vagrant</code>
+          <br/>
+          <br/>
+          Add more shared folders :
+          <pre><code>
+config.vm.synced_folder "api/", "/srv/api"
+config.vm.synced_folder "compute/", "/srv/compute"
+          </code></pre>
+          </section>
+          </section>
+
+          <section id="modify">
+          <section>
+          <h2><a href="#/menu">C</a>hange the size of the VM</h2>
+<pre><code>          
+controller.vm.provider "virtualbox" do |v|
+  v.memory = 2048
+  v.cpus = 2
+end
+</code></pre>
+          Some customizations are provider specific (attaching devices ...)
+
+          </section>
+          </section>
+
+          <section id="multipleVMs">
+          <section>
+          <h2><a href="#/menu">W</a>ork with multiple VMs</h2>
+           <pre><code>
+NSERVICES = 2
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.define "controller" do |controller|
+   config.vm.box = "ginflow"
+   controller.vm.hostname = "controller"
+   controller.vm.network :private_network, ip: "192.168.50.2"
+  end
+
+  (0..NSERVICES - 1).each do |i|
+   config.vm.define "service#{i}" do |service|
+     service.vm.box = "ginflow"
+     service.vm.hostname = "service#{i}"
+     service.vm.network :private_network, ip: "192.168.50.1#{i}"
+  end
+end
+           </code></pre>
+          </section>
+          </section>
+
+          <section id="dry">
+          <section>
+          <h2><a href="#/menu">D</a>on't Repeat Yourself</h2>
+          <pre><code style="min-height:700px">
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+require 'yaml'
+config = YAML::load_file(File.join(File.dirname(__FILE__), "myenv.yml"))
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+# Number of machines that will host the services
+NSERVICES = 2
+# HOCL_ROOT must point to the root of the project source
+HOCL_ROOT = config["hocl_root"]
+# HOCL_ROOT must point to the root of the api project source
+HOCL_API_ROOT = File.join(File.dirname(__FILE__),"hocl-wms-api")
+# The following should be fine
+hocl_dist_path = File.join(HOCL_ROOT, "target/dist/hocl-wf-distribution/hocl-wf")
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ginflow"
+  config.vm.synced_folder "#{HOCL_API_ROOT}/builds", "/share/builds"
+  config.vm.synced_folder "#{hocl_dist_path}", "/share/hocl-dist"
+  config.vm.synced_folder "activemq", "/share/activemq"
+  config.vm.synced_folder "data", "/share/data"
+
+  # controller host is composed of the following components:
+  # * the api (rails)
+  # * the compiler service (redis-server + sidekiq)
+  # * the log service
+  config.vm.define "controller" do |controller|
+    controller.vm.hostname = "controller"
+    controller.vm.network :private_network, ip: "192.168.50.2"
+    controller.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 2
+    end
+  end
+
+  # Service nodes host hocl wrapper to real services
+  (0..NSERVICES - 1).each do |i|
+    config.vm.define "service#{i}" do |service|
+      service.vm.hostname = "service#{i}"
+      service.vm.network :private_network, ip: "192.168.50.1#{i}"
+      service.vm.provider "virtualbox" do |v|
+        v.memory = 512
+      end
+    end
+  end
+
+end
+          </code></pre>
+          </section>
+          </section>
+
+          <section id="savePublish">
+          <section>
+          <h2><a href="#/menu">S</a>ave and publish</h2>
+          <pre><code>
+vagrant package --output mabox
+# test
+vagrant box add mabox mabox.box 
+# create a new project and up
+vagrant init mabox && vagrant up
+          </code></pre>
+          </section>
+          </section>
+
+          <section id="work">
+          <section>
+          <h2><a href="#/menu">L</a>earn by doing</h2>
+          <code>vagrant up</code> should start a VM with
+          <ol>
+            <li><code>docker.io</code> inside</li>
+            <li>the remote api enabled</li>
+          </ol>
+          <br/>
+          The three following commands should work : 
+          <pre><code>
+vagrant up
+curl -X POST localhost:4243/images/create?fromImage=ubuntu:latest
+curl -X POST -d '{"Image":"ubuntu", "Tag": "latest", "Cmd":"sleep 100"}' -H 'Content-Type: application/json' localhost:4243/containers/create\
+          </code></pre>
+          
+          References : 
+          <ul>
+            <li><a href="https://docs.docker.com/installation/ubuntulinux">https://docs.docker.com/installation/ubuntulinux/</a></li>
+            <li><a href="http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html">http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html/a<></li>
+          </ul>
+          </section>
+          </section>
+
+          <section>
+
+
+      </div>
+
+      <script src="lib/revealjs/lib/js/head.min.js"></script>
+      <script src="lib/revealjs/js/reveal.min.js"></script>
+
+      <script>
+
+        Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+          loop: true,
+          theme: Reveal.getQueryHash().theme, 
+          transition: 'linear',
+
+          dependencies: [
+          { src: 'lib/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'lib/revealjs/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'lib/revealjs/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'lib/revealjs/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'lib/revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: 'lib/revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+        });
+
+      </script>
+
+    </body>
+  </html>
